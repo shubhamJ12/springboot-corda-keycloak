@@ -1,0 +1,545 @@
+{
+    "kind": "Template",
+    "apiVersion": "v1",
+    "message": "NOTE: ${DATABASE_SERVICE_NAME}.\n\n       Username: ${POSTGRESQL_USER}\n       Password: ${POSTGRESQL_PASSWORD}\n  Database Name: ${POSTGRESQL_DATABASE}\n Connection URL: postgresql://${DATABASE_SERVICE_NAME}:5432/\n\n",
+    "metadata": {
+        "name": "oip-springboot",
+        "annotations": {
+            "iconClass": "icon-openjdk",
+            "description": "Application template for Spring boot backend with postgreSQL on EAP 6 using STI"
+         }
+    },
+    "labels": {                   
+       "application": "clipeum",
+       "createdBy": "Sanjeev-Hegde"
+    },
+    "parameters": [
+        {
+            "description": "The URL of the repository with your application source code",
+            "name": "SOURCE_REPOSITORY_URL",
+            "value": "https://github.com/Sanjeev-Hegde/springboot-corda-keycloak.git"
+        },
+        {
+            "description": "Git branch to fetch",
+            "name": "SOURCE_REPOSITORY_CONTEXT",
+            "value": "master"
+        },
+        {
+            "description": "Number of replicas to run",
+            "name": "REPLICA_COUNT",
+            "value": "1"
+        },
+        {
+            "description": "Custom hostname for service routes.  Leave blank for default hostname, e.g.: <application-name>.<project>.<default-domain-suffix>",
+            "name": "APPLICATION_HOSTNAME"
+         },
+         {
+            "description": "Name of the PostgreSQL database accessed.",
+            "displayName": "PostgreSQL Database Name",
+            "name": "POSTGRESQL_DATABASE",
+            "required": true,
+            "value": "gbis"
+         },
+         {
+            "description": "The name of the OpenShift Service exposed for the database.",
+            "displayName": "Database Service Name",
+            "name": "DATABASE_SERVICE_NAME",
+            "required": true,
+            "value": "clipeum-postgresql"
+        },
+        {
+            "description": "Username for PostgreSQL user that will be used for accessing the database.",
+            "displayName": "PostgreSQL Connection Username",
+            "from": "user[A-Z0-9]{3}",
+            "generate": "expression",
+            "name": "POSTGRESQL_USER",
+            "required": true
+        },
+        {
+            "description": "Password for the PostgreSQL connection user.",
+            "displayName": "PostgreSQL Connection Password",
+            "from": "[a-zA-Z0-9]{16}",
+            "generate": "expression",
+            "name": "POSTGRESQL_PASSWORD",
+            "required": true
+        },
+        {
+            "description": "Volume space available for data, e.g. 512Mi, 2Gi.",
+            "displayName": "Volume Capacity",
+            "name": "VOLUME_CAPACITY",
+            "required": true,
+            "value": "1Gi"
+        },
+        {
+            "description": "Version of PostgreSQL image to be used (10 or latest).",
+            "displayName": "Version of PostgreSQL Image",
+            "name": "POSTGRESQL_VERSION",
+            "required": true,
+            "value": "9.6"
+        },
+        {
+            "description": "Maximum amount of memory the container can use.",
+            "displayName": "Memory Limit",
+            "name": "MEMORY_LIMIT",
+            "required": true,
+            "value": "512Mi"
+        },
+        {
+            "description": "Corda Service Host Name",
+            "displayName": "Node Hostname",
+            "name": "NODE_HOSTNAME",
+            "required": true,
+            "value": "corda-node-gbis.corda-oc.svc"
+        },
+        {
+            "description": "Corda Node Web Port",
+            "displayName": "Node WebPort",
+            "name": "NODE_WEB_PORT",
+            "required": true,
+            "value": "10004"
+        },
+        {
+            "description": "Spring Profile to load",
+            "displayName": "Spring Profile",
+            "name": "SPRING_PROFILE",
+            "required": true,
+            "value": "uat"
+        },
+        {
+            "description": "Entity Name in Lower case",
+            "displayName": "Entity Name",
+            "name": "ENTITY_NAME",
+            "required": true,
+            "value": "gbis"
+        },
+        {
+            "description": "Kecloak SSO URL(include http/https also",
+            "displayName": "Keycloak URL",
+            "name": "KEYCLOAK_URL",
+            "required": true,
+            "value":"https://sso-clipeum-corda-test.apps.ocp.lab-nxtit.com"
+        } 
+    ],
+    "objects": [ 
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+               "name": "jhipsterbackend",
+               "labels": {                                
+                "application": "clipeum"
+                }
+            },
+            "spec": {
+               "dockerImageRepository": "",
+               "tags": [
+                  {
+                     "name": "latest"
+                  }
+               ]
+            }
+        },   
+        {
+            "kind": "BuildConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "jhipsterbackend",
+                "labels": {
+                    "application": "clipeum"    
+                 }
+            },
+            "spec": {
+                "triggers": [
+                    {
+                       "type": "ImageChange",
+                       "imageChange": {}
+                    }
+                 ],
+                "source": {
+                    "type": "Git",
+                    "git": {
+                       "uri": "${SOURCE_REPOSITORY_URL}",
+                       "ref": "${SOURCE_REPOSITORY_CONTEXT}"  
+                    },
+                    "contextDir": "api"
+                 },
+                 "strategy": {
+                    "type": "Source",
+                    "sourceStrategy": {
+                       "from": {
+                          "kind": "ImageStreamTag",
+                          "namespace": "openshift",
+                          "name": "java:8"
+                       }
+                    }
+                 },
+                 "output": {                    
+                    "to": {
+                       "kind": "ImageStreamTag",
+                       "name": "jhipsterbackend:latest"
+                    }
+                 }
+            }
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+               "name": "jhipster-backend",
+               "labels": {                                
+                    "application": "clipeum"
+                }
+            },
+            "spec": {
+                "strategy": {
+                   "type": "Recreate"
+                },
+                "replicas": 1,
+                "selector": {
+                    "deploymentConfig": "jhipster-backend"
+                },
+                "template": {
+                    "metadata": {
+                       "name": "jhipster-backend",
+                       "labels": {
+                          "deploymentConfig": "jhipster-backend"
+                       }
+                    },
+                    "spec": {
+                       "volumes": [
+                          {
+                             "name": "jhipster-backend",
+                             "emptyDir": {}
+                          }
+                       ],
+                       "containers": [
+                          {
+                             "name": "jhipster-backend",
+                             "image": "jhipsterbackend",
+                             "imagePullPolicy": "IfNotPresent",
+                             "ports": [
+                                {
+                                   "containerPort": 8080,
+                                   "protocol": "TCP"
+                                }
+                             ],
+                             "env": [
+                                {
+                                    "name": "NODE_HOSTNAME",
+                                    "value": "${NODE_HOSTNAME}"
+                                },
+                                {
+                                    "name": "NODE_WEB_PORT",
+                                    "value": "${NODE_WEB_PORT}"
+                                },
+                                {
+                                    "name": "KEYCLOAK_URL",
+                                    "value": "${KEYCLOAK_URL}"
+                                },
+                                {
+                                    "name": "SPRING_PROFILES_ACTIVE",
+                                    "value": "${SPRING_PROFILE}"
+                                },
+                                {
+                                    "name": "ENTITY_NAME",
+                                    "value": "${ENTITY_NAME}"
+                                },
+                                {
+                                    "name": "DATABASE_SERVICE_NAME",
+                                    "value": "${DATABASE_SERVICE_NAME}"
+                                },
+                                {
+                                    "name": "POSTGRESQL_USER",
+                                    "valueFrom": {
+                                        "secretKeyRef": {
+                                            "key": "database-user",
+                                            "name": "${DATABASE_SERVICE_NAME}"
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "POSTGRESQL_PASSWORD",
+                                    "valueFrom": {
+                                        "secretKeyRef": {
+                                            "key": "database-password",
+                                            "name": "${DATABASE_SERVICE_NAME}"
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "POSTGRESQL_DATABASE",
+                                    "valueFrom": {
+                                        "secretKeyRef": {
+                                            "key": "database-name",
+                                            "name": "${DATABASE_SERVICE_NAME}"
+                                        }
+                                    }
+                                }
+                             ]
+                            }
+                        ]
+                    }
+                },
+                "triggers": [
+                    {
+                      "type": "ConfigChange" 
+                    },
+                    {
+                      "type": "ImageChange", 
+                      "imageChangeParams": {
+                        "automatic": true,
+                        "containerNames": [
+                          "jhipster-backend"
+                        ],
+                        "from": {
+                          "kind": "ImageStreamTag",
+                          "name": "jhipsterbackend:latest"
+                        }
+                      }
+                    }
+                  ]
+            }    
+     
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "PersistentVolumeClaim",
+            "metadata": {
+                "name": "${DATABASE_SERVICE_NAME}"
+            },
+            "spec": {
+                "accessModes": [
+                    "ReadWriteOnce"
+                ],
+                "resources": {
+                    "requests": {
+                        "storage": "${VOLUME_CAPACITY}"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Secret",
+            "metadata": {
+                "annotations": {
+                    "template.openshift.io/expose-database_name": "{.data['database-name']}",
+                    "template.openshift.io/expose-password": "{.data['database-password']}",
+                    "template.openshift.io/expose-username": "{.data['database-user']}"
+                },
+                "name": "${DATABASE_SERVICE_NAME}"
+            },
+            "stringData": {
+                "database-name": "${POSTGRESQL_DATABASE}",
+                "database-password": "${POSTGRESQL_PASSWORD}",
+                "database-user": "${POSTGRESQL_USER}"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "DeploymentConfig",
+            "metadata": {
+                "annotations": {
+                    "template.alpha.openshift.io/wait-for-ready": "true"
+                },
+                "name": "${DATABASE_SERVICE_NAME}"
+            },
+            "spec": {
+                "replicas": 1,
+                "selector": {
+                    "name": "${DATABASE_SERVICE_NAME}"
+                },
+                "strategy": {
+                    "type": "Recreate"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "name": "${DATABASE_SERVICE_NAME}"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "capabilities": {},
+                                "env": [
+                                    {
+                                        "name": "POSTGRESQL_USER",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "key": "database-user",
+                                                "name": "${DATABASE_SERVICE_NAME}"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "POSTGRESQL_PASSWORD",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "key": "database-password",
+                                                "name": "${DATABASE_SERVICE_NAME}"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "POSTGRESQL_DATABASE",
+                                        "valueFrom": {
+                                            "secretKeyRef": {
+                                                "key": "database-name",
+                                                "name": "${DATABASE_SERVICE_NAME}"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "image": " ",
+                                "imagePullPolicy": "IfNotPresent",
+                                "livenessProbe": {
+                                    "exec": {
+                                        "command": [
+                                            "/usr/libexec/check-container",
+                                            "--live"
+                                        ]
+                                    },
+                                    "initialDelaySeconds": 120,
+                                    "timeoutSeconds": 10
+                                },
+                                "name": "postgresql",
+                                "ports": [
+                                    {
+                                        "containerPort": 5432,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "readinessProbe": {
+                                    "exec": {
+                                        "command": [
+                                            "/usr/libexec/check-container"
+                                        ]
+                                    },
+                                    "initialDelaySeconds": 5,
+                                    "timeoutSeconds": 1
+                                },
+                                "resources": {
+                                    "limits": {
+                                        "memory": "${MEMORY_LIMIT}"
+                                    }
+                                },
+                                "securityContext": {
+                                    "capabilities": {},
+                                    "privileged": false
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/var/lib/pgsql/data",
+                                        "name": "${DATABASE_SERVICE_NAME}-data"
+                                    }
+                                ]
+                            }
+                        ],
+                        "dnsPolicy": "ClusterFirst",
+                        "restartPolicy": "Always",
+                        "volumes": [
+                            {
+                                "name": "${DATABASE_SERVICE_NAME}-data",
+                                "persistentVolumeClaim": {
+                                    "claimName": "${DATABASE_SERVICE_NAME}"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "triggers": [
+                    {
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "postgresql"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "name": "postgresql:${POSTGRESQL_VERSION}",
+                                "namespace": "openshift"
+                            },
+                            "lastTriggeredImage": ""
+                        },
+                        "type": "ImageChange"
+                    },
+                    {
+                        "type": "ConfigChange"
+                    }
+                ]
+            },
+            "status": {}
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "annotations": {
+                    "template.openshift.io/expose-uri": "postgres://{.spec.clusterIP}:{.spec.ports[?(.name==\"postgresql\")].port}"
+                },
+                "name": "${DATABASE_SERVICE_NAME}"
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "name": "postgresql",
+                        "nodePort": 0,
+                        "port": 5432,
+                        "protocol": "TCP",
+                        "targetPort": 5432
+                    }
+                ],
+                "selector": {
+                    "name": "${DATABASE_SERVICE_NAME}"
+                },
+                "sessionAffinity": "None",
+                "type": "ClusterIP"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        },
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+               "name": "backend-service",
+               "annotations": {
+                  "description": "The web server's http port"
+               }
+            },
+            "spec": {
+               "ports": [
+                  {
+                     "protocol": "TCP",
+                     "port": 8080,
+                     "targetPort": 8080
+                  }
+               ],
+               "selector": {
+                  "deploymentConfig": "jhipster-backend"
+               }
+            }
+         },
+         {
+            "kind": "Route",
+            "apiVersion": "v1",
+            "metadata": {
+               "name": "jhipster-backend-route",
+               "annotations": {
+                  "description": "Route for application's http service"
+               }
+            },
+            "spec": {
+               "host": "${APPLICATION_HOSTNAME}",
+               "to": {
+                  "kind": "Service",
+                  "name": "backend-service"
+               }
+            }
+         }
+    ]
+ }
+ 

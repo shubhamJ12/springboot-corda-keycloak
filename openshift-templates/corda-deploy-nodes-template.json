@@ -1,0 +1,474 @@
+{
+    "kind": "Template",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "corda-oc-template"
+    },
+    "labels": {                   
+       "application": "corda-oc",
+       "createdBy": "sanjeev"
+    },
+    "parameters": [
+        {
+            "description": "The URL of the repository with your application source code ",
+            "name": "SOURCE_REPOSITORY_URL",
+            "value": "https://github.com/Sanjeev-Hegde/springboot-corda-keycloak.git"
+        },
+        {
+            "description": "Number of replicas to run",
+            "name": "REPLICA_COUNT",
+            "value": "1"
+        },
+        {
+            "description": "Application Name",
+            "name": "APPLICATION_NAME",
+            "value": "corda-node-oc"
+        },
+        {
+            "description": "Notary Name",
+            "name": "CORDA_NOTARY_NAME",
+            "value": "Notary"
+        },
+        {
+            "description": "Entity 1 Organization Name",
+            "name": "CORDA_ENTITY_NAME_1",
+            "value": "GBIS"
+        },
+        {
+            "description": "Entity 2 Organization Name",
+            "name": "CORDA_ENTITY_NAME_2",
+            "value": "IBFS"
+        },
+        {
+            "description": "Corda Notary Node Name",
+            "name": "CORDA_NOTARY_NODE_NAME",
+            "value": "corda-node-notary"
+        },
+        {
+            "description": "Corda Entity1 Node Name",
+            "name": "CORDA_ENTITY_NODE_NAME_1",
+            "value": "corda-node-gbis"
+        },
+        {
+            "description": "Corda Entity Node Name",
+            "name": "CORDA_ENTITY_NODE_NAME_2",
+            "value": "corda-node-ibfs"
+        }
+    ],
+    "objects": [    
+        {
+            "kind": "BuildConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "corda-node",
+                "labels": {
+                    "application": "${APPLICATION_NAME}"    
+                 }
+            },
+            "spec": {
+                "source": {
+                    "type": "Git",
+                    "git": {
+                       "uri": "${SOURCE_REPOSITORY_URL}",
+                       "ref": "master"  
+                    },
+                    "contextDir": "cordapp"
+                 },
+                 "strategy": {
+                    "type": "Docker",
+                    "dockerStrategy":{
+                        "buildArgs":[
+                            {
+                                "name": "BUILDTIME_CORDA_VERSION",
+                                "value": "3.1-corda"
+                            }
+                        ]
+                    }
+ 
+                 },
+                 "output": {                    
+                    "to": {
+                       "kind": "ImageStreamTag",
+                       "name": "corda-node:latest"
+                    }
+                 }
+            }
+        },
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+               "name": "corda-node"
+            },
+            "spec": {
+               "dockerImageRepository": "",
+               "tags": [
+                  {
+                     "name": "latest"
+                  }
+               ]
+            }
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+               "name": "${CORDA_NOTARY_NODE_NAME}",
+               "labels": {
+                    "application": "${APPLICATION_NAME}"    
+                }
+            },
+            "spec": {
+                "strategy": {
+                   "type": "Recreate"
+                },
+                "replicas": 1,
+                "selector": {
+                    "name": "${CORDA_NOTARY_NODE_NAME}"
+                },
+                "template": {
+                    "metadata": {
+                       "name": "${CORDA_NOTARY_NODE_NAME}",
+                       "labels": {
+                          "name": "${CORDA_NOTARY_NODE_NAME}"
+                       }
+                    },
+                    "spec": {
+                       "containers": [
+                          {
+                             "name": "${CORDA_NOTARY_NODE_NAME}",
+                             "image": "corda-node",
+                             "imagePullPolicy": "IfNotPresent",
+                             "env": [
+                                {
+                                    "name": "NODE_NAME",
+                                    "value": "${CORDA_NOTARY_NAME}"
+                                }
+                             ],
+                             "ports": [
+                                {
+                                   "containerPort": 10002,
+                                   "protocol": "TCP"
+                                },
+                                {
+                                    "containerPort": 10003,
+                                    "protocol": "TCP"
+                                },
+                                {
+                                    "containerPort": 10043,
+                                    "protocol": "TCP"
+                                },
+                                {
+                                    "containerPort": 10004,
+                                    "protocol": "TCP"
+                                }
+                             ]
+                            }
+                        ]
+                    }
+                },
+                "triggers": [
+                    {
+                      "type": "ConfigChange" 
+                    },
+                    {
+                      "type": "ImageChange", 
+                      "imageChangeParams": {
+                        "automatic": true,
+                        "containerNames": [
+                          "${CORDA_NOTARY_NODE_NAME}"
+                        ],
+                        "from": {
+                          "kind": "ImageStreamTag",
+                          "name": "corda-node:latest"
+                        }
+                      }
+                    }
+                  ]
+            }    
+     
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+               "name": "${CORDA_ENTITY_NODE_NAME_1}",
+               "labels": {
+                    "application": "${APPLICATION_NAME}"    
+                }
+               
+            },
+            "spec": {
+                "strategy": {
+                   "type": "Recreate"
+                },
+                "replicas": 1,
+                "selector": {
+                    "name": "${CORDA_ENTITY_NODE_NAME_1}"
+                },
+                "template": {
+                    "metadata": {
+                       "name": "${CORDA_ENTITY_NODE_NAME_1}",
+                       "labels": {
+                        "name": "${CORDA_ENTITY_NODE_NAME_1}"
+                       }
+                    },
+                    "spec": {
+                       "containers": [
+                          {
+                             "name": "${CORDA_ENTITY_NODE_NAME_1}",
+                             "image": "corda-node",
+                             "imagePullPolicy": "IfNotPresent",
+                             "env": [
+                                {
+                                    "name": "NODE_NAME",
+                                    "value": "${CORDA_ENTITY_NAME_1}"
+                                }
+                             ],
+                             "ports": [
+                                {
+                                   "containerPort": 10002,
+                                   "protocol": "TCP"
+                                },
+                                {
+                                    "containerPort": 10003,
+                                    "protocol": "TCP"
+                                },
+                                {
+                                    "containerPort": 10043,
+                                    "protocol": "TCP"
+                                },
+                                {
+                                    "containerPort": 10004,
+                                    "protocol": "TCP"
+                                }
+                             ]
+                            }
+                        ]
+                    }
+                },
+                "triggers": [
+                    {
+                      "type": "ConfigChange" 
+                    },
+                    {
+                      "type": "ImageChange", 
+                      "imageChangeParams": {
+                        "automatic": true,
+                        "containerNames": [
+                          "${CORDA_ENTITY_NODE_NAME_1}"
+                        ],
+                        "from": {
+                          "kind": "ImageStreamTag",
+                          "name": "corda-node:latest"
+                        }
+                      }
+                    }
+                  ]
+            }    
+     
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+               "name": "${CORDA_ENTITY_NODE_NAME_2}",
+               "labels": {
+                    "application": "${APPLICATION_NAME}"    
+                }
+            },
+            "spec": {
+                "strategy": {
+                   "type": "Recreate"
+                },
+                "replicas": 1,
+                "selector": {
+                    "name": "${CORDA_ENTITY_NODE_NAME_2}"
+                },
+                "template": {
+                    "metadata": {
+                       "name": "${CORDA_ENTITY_NODE_NAME_2}",
+                       "labels": {
+                        "name": "${CORDA_ENTITY_NODE_NAME_2}"
+                       }
+                    },
+                    "spec": {
+                       "containers": [
+                          {
+                             "name": "${CORDA_ENTITY_NODE_NAME_2}",
+                             "image": "corda-node",
+                             "imagePullPolicy": "IfNotPresent",
+                             "env": [
+                                {
+                                    "name": "NODE_NAME",
+                                    "value": "${CORDA_ENTITY_NAME_2}"
+                                }
+                             ],
+                             "ports": [
+                                {
+                                   "containerPort": 10002,
+                                   "protocol": "TCP"
+                                },
+                                {
+                                    "containerPort": 10003,
+                                    "protocol": "TCP"
+                                },
+                                {
+                                    "containerPort": 10043,
+                                    "protocol": "TCP"
+                                },
+                                {
+                                    "containerPort": 10004,
+                                    "protocol": "TCP"
+                                }
+                             ]
+                            }
+                        ]
+                    }
+                },
+                "triggers": [
+                    {
+                      "type": "ConfigChange" 
+                    },
+                    {
+                      "type": "ImageChange", 
+                      "imageChangeParams": {
+                        "automatic": true,
+                        "containerNames": [
+                          "${CORDA_ENTITY_NODE_NAME_2}"
+                        ],
+                        "from": {
+                          "kind": "ImageStreamTag",
+                          "name": "corda-node:latest"
+                        }
+                      }
+                    }
+                  ]
+            }    
+        },
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+               "name": "${CORDA_NOTARY_NODE_NAME}",
+               "annotations": {
+                  "description": "Corda Node Service"
+               }
+            },
+            "spec": {
+               "ports": [
+                {
+                    "name":"rpc",
+                    "protocol": "TCP",
+                    "port": 10003,
+                    "targetPort": 10003
+                  },
+                  {
+                    "name":"p2p",
+                    "protocol": "TCP",
+                    "port": 10002,
+                    "targetPort": 10002
+                  },
+                  {
+                    "name":"admin",
+                    "protocol": "TCP",
+                    "port": 10043,
+                    "targetPort": 10043
+                  },
+                  {
+                    "name":"web",
+                    "protocol": "TCP",
+                    "port": 10004,
+                    "targetPort": 10004
+                  }
+               ],
+               "selector": {
+                "name": "${CORDA_NOTARY_NODE_NAME}"
+               }
+            }
+         },
+         {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+               "name": "${CORDA_ENTITY_NODE_NAME_1}",
+               "annotations": {
+                  "description": "Corda Node Service"
+               }
+            },
+            "spec": {
+               "ports": [
+                  {
+                    "name":"rpc",
+                    "protocol": "TCP",
+                    "port": 10003,
+                    "targetPort": 10003
+                  },
+                  {
+                    "name":"p2p",
+                    "protocol": "TCP",
+                    "port": 10002,
+                    "targetPort": 10002
+                  },
+                  {
+                    "name":"admin",
+                    "protocol": "TCP",
+                    "port": 10043,
+                    "targetPort": 10043
+                  },
+                  {
+                    "name":"web",
+                    "protocol": "TCP",
+                    "port": 10004,
+                    "targetPort": 10004
+                  }
+               ],
+               "selector": {
+                "name": "${CORDA_ENTITY_NODE_NAME_1}"
+               }
+            }
+         },
+         {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+               "name": "${CORDA_ENTITY_NODE_NAME_2}",
+               "annotations": {
+                  "description": "Corda Node Service"
+               }
+            },
+            "spec": {
+               "ports": [
+                {
+                    "name":"rpc",
+                    "protocol": "TCP",
+                    "port": 10003,
+                    "targetPort": 10003
+                  },
+                  {
+                    "name":"p2p",
+                    "protocol": "TCP",
+                    "port": 10002,
+                    "targetPort": 10002
+                  },
+                  {
+                    "name":"admin",
+                    "protocol": "TCP",
+                    "port": 10043,
+                    "targetPort": 10043
+                  },
+                  {
+                    "name":"web",
+                    "protocol": "TCP",
+                    "port": 10004,
+                    "targetPort": 10004
+                  }
+               ],
+               "selector": {
+                "name": "${CORDA_ENTITY_NODE_NAME_2}"
+               }
+            }
+         }
+    ]
+ }
+ 
