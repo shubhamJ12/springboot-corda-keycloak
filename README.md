@@ -7,4 +7,4 @@ This repository consists of the followng modules<br>
 4. openshift-templates: Consosts of templates for deploying  backend, corda node, postgresql and keycloack for each entities
 
 <h2>Architecture</h2>
---TODO--
+--TODO---
