@@ -34,8 +34,6 @@ Then implements the generated interfaces with `@RestController` classes.
 
 To edit the `api.yml` definition file, you can use a tool such as [Swagger-Editor](). Start a local instance of the swagger-editor using docker by running: `docker-compose -f src/main/docker/swagger-editor.yml up -d`. The editor will then be reachable at [http://localhost:7742](http://localhost:7742).
 
-Refer to [Doing API-First development][] for more details.
-
 ## Building for production
 
 To optimize the api application for production, run:
@@ -44,10 +42,7 @@ To optimize the api application for production, run:
 
 To ensure everything worked, run:
 
-    java -jar target/*.war
-
-
-Refer to [Using JHipster in production][] for more details.
+    java -jar target/*.jar
 
 ## Testing
 
