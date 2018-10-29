@@ -10,9 +10,17 @@ This application was generated using JHipster 4.14.5. The purpose of this applic
         To stop it and remove the container, run:
         <pre> docker-compose -f src/main/docker/postgresql.yml down </pre>
         <h4>OR</h4>
-        Downlad and run postgresql binary 
+        Downlad and run postgresql binary <br>
         <br>
-        <strong>Note:</strong> Create databases, users and roles by loging into running postgres instance      
+        <h4>Creating Database and user:</h4>
+        <pre>
+        docker exec -ti -u postgres docker_postgresname /bin/bash or login as postgres user if using binary
+        psql
+        create database gbis;
+        create user gbis with login;
+        create database ibfs;
+        create user ibfs with login;
+        </pre>        
     </li>
     <li>
         <h3> Running application </h3>
