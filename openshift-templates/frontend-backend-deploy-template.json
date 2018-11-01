@@ -138,8 +138,63 @@
                   }
                ]
             }
-        },   
+        },
         {
+          "kind": "ImageStream",
+          "apiVersion": "v1",
+          "metadata": {
+            "name": "frontend-build-${ENTITY_NAME}",
+            "labels": {
+              "application": "clipeum"
+            }
+          },
+          "spec": {
+            "dockerImageRepository": "",
+            "tags": [
+              {
+                "name": "latest"
+              }
+            ]
+          }
+        },
+      {
+        "kind": "BuildConfig",
+        "apiVersion": "v1",
+        "metadata": {
+          "name": "angular-frontend-${ENTITY_NAME}",
+          "labels": {
+            "application": "clipeum"
+          }
+        },
+        "spec": {
+          "triggers": [
+            {
+              "type": "ImageChange",
+              "imageChange": {}
+            }
+          ],
+          "source": {
+            "type": "Git",
+            "git": {
+              "uri": "https://github.com/Sanjeev-Hegde/frontend.git",
+              "ref": "development"
+            }
+          },
+          "strategy": {
+            "type": "Docker",
+            "dockerStrategy":{
+            }
+
+          },
+          "output": {
+            "to": {
+              "kind": "ImageStreamTag",
+              "name": "frontend-build-${ENTITY_NAME}:latest"
+            }
+          }
+        }
+      },
+      {
             "kind": "BuildConfig",
             "apiVersion": "v1",
             "metadata": {
@@ -181,6 +236,64 @@
                  }
             }
         },
+      {
+        "kind": "DeploymentConfig",
+        "apiVersion": "v1",
+        "metadata": {
+          "name": "frontend-deploy-${ENTITY_NAME}"
+        },
+        "spec": {
+          "strategy": {
+            "type": "Recreate"
+          },
+          "replicas": 1,
+          "selector": {
+            "deploymentConfig": "frontend-deploy-${ENTITY_NAME}"
+          },
+          "template": {
+            "metadata": {
+              "name": "frontend-deploy-${ENTITY_NAME}",
+              "labels": {
+                "deploymentConfig": "frontend-deploy-${ENTITY_NAME}"
+              }
+            },
+            "spec": {
+              "containers": [
+                {
+                  "name": "frontend-deploy-${ENTITY_NAME}",
+                  "image": "frontend-build-${ENTITY_NAME}",
+                  "imagePullPolicy": "IfNotPresent",
+                  "ports": [
+                    {
+                      "containerPort": 8080,
+                      "protocol": "TCP"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "triggers": [
+            {
+              "type": "ConfigChange"
+            },
+            {
+              "type": "ImageChange",
+              "imageChangeParams": {
+                "automatic": true,
+                "containerNames": [
+                  "frontend-deploy-${ENTITY_NAME}"
+                ],
+                "from": {
+                  "kind": "ImageStreamTag",
+                  "name": "frontend-build-${ENTITY_NAME}:latest"
+                }
+              }
+            }
+          ]
+        }
+
+      },
         {
             "kind": "DeploymentConfig",
             "apiVersion": "v1",
@@ -473,6 +586,28 @@
             "status": {}
         },
         {
+          "kind": "Service",
+          "apiVersion": "v1",
+          "metadata": {
+            "name": "frontend-service-${ENTITY_NAME}",
+            "annotations": {
+              "description": "The web server's http port"
+            }
+          },
+          "spec": {
+            "ports": [
+              {
+                "protocol": "TCP",
+                "port": 8080,
+                "targetPort": 8080
+              }
+            ],
+            "selector": {
+              "deploymentConfig": "frontend-deploy-${ENTITY_NAME}"
+            }
+          }
+        },
+        {
             "apiVersion": "v1",
             "kind": "Service",
             "metadata": {
@@ -539,7 +674,24 @@
                   "name": "backend-service-${ENTITY_NAME}"
                }
             }
-         }
+         },
+      {
+        "kind": "Route",
+        "apiVersion": "v1",
+        "metadata": {
+          "name": "angular-frontend-route-${ENTITY_NAME}",
+          "annotations": {
+            "description": "Route for application's http service"
+          }
+        },
+        "spec": {
+          "host": "${APPLICATION_HOSTNAME}",
+          "to": {
+            "kind": "Service",
+            "name": "frontend-service-${ENTITY_NAME}"
+          }
+        }
+      }
     ]
  }
  
