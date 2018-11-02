@@ -57,3 +57,10 @@ To ensure everything worked, run:
 To launch your application's tests, run:
 
     ./mvnw clean test
+    
+## Keycloak
+
+Steps:
+1)Create a user with the username 'gbis-admin' and password '1111'
+2)In the users, edit gbis-admin go to role-mapping tab.
+3)In the client roles, select realm management and assign realm-admin role to this user.
