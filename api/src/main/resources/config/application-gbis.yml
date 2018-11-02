@@ -13,7 +13,17 @@
 # http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 # ===================================================================
 
+
+keycloak:
+    serverUrl: http://localhost:9080/auth/
+    realmName: gbis
+    username: gbis-admin
+    password: 1111
+    clientId: web_app
+
+
 #hoste name and rpc port of GBIS corda node
+
 corda:
     service:
         host: localhost
@@ -149,4 +159,4 @@ jhipster:
 # http://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-application:
+
