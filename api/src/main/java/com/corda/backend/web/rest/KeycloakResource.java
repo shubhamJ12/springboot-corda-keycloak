@@ -50,8 +50,8 @@ public class KeycloakResource {
 
     @GetMapping("/assign-realm-role")
     @Timed
-    public String assignRealmRole(@RequestParam(value = "username") String username,@RequestParam(value = "roles") String[] roles) {
-        String userId = kc.realm(keycloakConfiguration.getRealmName()).users().search(username, 0, 1).get(0).getId();
+    public String assignRealmRole(@RequestParam(value = "userId") String userId,@RequestParam(value = "roles") String[] roles) {
+        //String userId = kc.realm(keycloakConfiguration.getRealmName()).users().search(username, 0, 1).get(0).getId();
         List<RoleRepresentation> userRoles = kc.realm(keycloakConfiguration.getRealmName()).users().get(userId).roles().realmLevel().listAll();
         kc.realm(keycloakConfiguration.getRealmName()).users().get(userId).roles().realmLevel().remove(userRoles);
         for(String role: roles){
