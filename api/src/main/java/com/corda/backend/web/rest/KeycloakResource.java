@@ -1,8 +1,11 @@
 package com.corda.backend.web.rest;
 
+import com.amazonaws.services.cognitoidentity.model.RoleMapping;
 import com.codahale.metrics.annotation.Timed;
 import com.corda.backend.config.KeycloakConfiguration;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.RoleMappingResource;
+import org.keycloak.admin.client.resource.RoleScopeResource;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +20,7 @@ import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -36,6 +40,18 @@ public class KeycloakResource {
 
    }
 
+    @GetMapping("/get-all-users")
+    @Timed
+    public List<UserRepresentation> getAllUsers() {
+        return kc.realm(keycloakConfiguration.getRealmName()).users().list();
+    }
+
+    @GetMapping("/get-user-roles")
+    @Timed
+    public List<RoleRepresentation> getUserRoles(@RequestParam(value = "id") String id) {
+        return kc.realm(keycloakConfiguration.getRealmName()).users().get(id).roles().getAll().getRealmMappings();
+    }
+
     @GetMapping("/get-all-realm-roles")
     @Timed
     public List<RoleRepresentation> getAllRealmRoles() {
@@ -50,8 +66,8 @@ public class KeycloakResource {
 
     @GetMapping("/assign-realm-role")
     @Timed
-    public String assignRealmRole(@RequestParam(value = "username") String username,@RequestParam(value = "roles") String[] roles) {
-        String userId = kc.realm(keycloakConfiguration.getRealmName()).users().search(username, 0, 1).get(0).getId();
+    public String assignRealmRole(@RequestParam(value = "userId") String userId,@RequestParam(value = "roles") String[] roles) {
+        //String userId = kc.realm(keycloakConfiguration.getRealmName()).users().search(username, 0, 1).get(0).getId();
         List<RoleRepresentation> userRoles = kc.realm(keycloakConfiguration.getRealmName()).users().get(userId).roles().realmLevel().listAll();
         kc.realm(keycloakConfiguration.getRealmName()).users().get(userId).roles().realmLevel().remove(userRoles);
         for(String role: roles){
