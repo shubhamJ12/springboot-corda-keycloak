@@ -13,7 +13,17 @@
 # http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 # ===================================================================
 
+
+keycloak:
+    serverUrl: http://localhost:9080/auth/
+    realmName: gbis
+    username: gbis-admin
+    password: 1111
+    clientId: web_app
+
+
 #hoste name and rpc port of GBIS corda node
+
 corda:
     service:
         host: localhost
@@ -55,8 +65,8 @@ spring:
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
         url: jdbc:postgresql://localhost:5432/gbis
-        username: gbis
-        password:
+        username: postgres
+        password: Postgres123#
     jpa:
         database-platform: io.github.jhipster.domain.util.FixedPostgreSQL82Dialect
         database: POSTGRESQL
@@ -149,4 +159,4 @@ jhipster:
 # http://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-application:
+
