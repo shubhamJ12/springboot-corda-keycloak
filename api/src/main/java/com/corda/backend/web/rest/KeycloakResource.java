@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -43,7 +44,21 @@ public class KeycloakResource {
 
     @GetMapping("/get-users-of-role")
     @Timed
-    public Set<UserRepresentation> getRoleUserMembers(@RequestParam(value = "roleType") String roleType) {
-        return kc.realm(keycloakConfiguration.getRealmName()).roles().get(roleType).getRoleUserMembers();
+    public Set<UserRepresentation> getRoleUserMembers(@RequestParam(value = "role") String role) {
+        return kc.realm(keycloakConfiguration.getRealmName()).roles().get(role).getRoleUserMembers();
+    }
+
+    @GetMapping("/assign-realm-role")
+    @Timed
+    public String assignRealmRole(@RequestParam(value = "username") String username,@RequestParam(value = "roles") String[] roles) {
+        String userId = kc.realm(keycloakConfiguration.getRealmName()).users().search(username, 0, 1).get(0).getId();
+        List<RoleRepresentation> userRoles = kc.realm(keycloakConfiguration.getRealmName()).users().get(userId).roles().realmLevel().listAll();
+        kc.realm(keycloakConfiguration.getRealmName()).users().get(userId).roles().realmLevel().remove(userRoles);
+        for(String role: roles){
+            RoleRepresentation realmRoleRepresentation = kc.realm(keycloakConfiguration.getRealmName()).roles().get(role).toRepresentation();
+            kc.realm(keycloakConfiguration.getRealmName()).users().get(userId).roles().realmLevel().add(Arrays.asList(realmRoleRepresentation));
+        }
+
+        return "Realm Role assigned";
     }
 }
