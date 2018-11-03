@@ -183,6 +183,12 @@
           "strategy": {
             "type": "Docker",
             "dockerStrategy":{
+              "env": [
+                {
+                  "name": "BUILD_ENV",
+                  "value": "${ENTITY_NAME}"
+                }
+              ]
             }
 
           },
