@@ -63,6 +63,7 @@ To launch your application's tests, run:
 Steps:
 <ul>
     <li>Create a user with the username 'gbis-admin' and password '1111'</li>
-    <li>In the users, edit gbis-admin go to role-mapping tab.</li>
+    <li>In the users, edit gbis-admin and then go to role-mapping tab.</li>
     <li>In the client roles, select realm management and assign realm-admin role to this user.</li>
+    <li>Create roles with name ROLE_MAKER,ROLE_CHECKER,ROLE_VIEWER</li>
 </ul>
