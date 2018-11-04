@@ -45,7 +45,7 @@ public class KeycloakResource {
           .password(keycloakConfiguration.getPassword())
           .clientId(keycloakConfiguration.getClientId())
           .resteasyClient(new ResteasyClientBuilder()
-              .connectionPoolSize(Integer.parseInt("10")).defaultProxy("webproxy.prd.lab-nxtit.priv",3128,"https")
+              .connectionPoolSize(Integer.parseInt("10")).defaultProxy("webproxy.prd.lab-nxtit.priv",3128)
               .build()).build();
    }
 
