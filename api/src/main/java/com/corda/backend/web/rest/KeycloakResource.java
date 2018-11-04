@@ -3,7 +3,9 @@ package com.corda.backend.web.rest;
 import com.amazonaws.services.cognitoidentity.model.RoleMapping;
 import com.codahale.metrics.annotation.Timed;
 import com.corda.backend.config.KeycloakConfiguration;
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.RoleMappingResource;
 import org.keycloak.admin.client.resource.RoleScopeResource;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -34,10 +36,17 @@ public class KeycloakResource {
 
   @PostConstruct
     public void initKeycloak(){
-        kc = Keycloak.getInstance(keycloakConfiguration.getServerUrl(), keycloakConfiguration.getRealmName(),
-            keycloakConfiguration.getUsername(), keycloakConfiguration.getPassword(), keycloakConfiguration.getClientId());
-
-
+//        kc = Keycloak.getInstance(keycloakConfiguration.getServerUrl(), keycloakConfiguration.getRealmName(),
+//            keycloakConfiguration.getUsername(), keycloakConfiguration.getPassword(), keycloakConfiguration.getClientId());
+//
+       kc = KeycloakBuilder.builder()
+          .serverUrl(keycloakConfiguration.getServerUrl()).realm( keycloakConfiguration.getRealmName())
+          .username(keycloakConfiguration.getUsername())
+          .password(keycloakConfiguration.getPassword())
+          .clientId(keycloakConfiguration.getClientId())
+          .resteasyClient(new ResteasyClientBuilder()
+              .connectionPoolSize(Integer.parseInt("10")).defaultProxy("webproxy.prd.lab-nxtit.priv",3128,"https")
+              .build()).build();
    }
 
     @GetMapping("/get-all-users")
