@@ -16,7 +16,7 @@
 keycloak:
     serverUrl: https://sso-clipeum-corda-test.apps.ocp.lab-nxtit.com/auth/
     realmName: ${ENTITY_NAME} #gbis
-    username:  ${ENTITY_NAME}-admin #gbis-admin
+    username:  entity-admin #gbis-admin
     password:  1111 #1111
     clientId:  web_app
 
