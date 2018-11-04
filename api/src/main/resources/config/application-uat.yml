@@ -14,7 +14,7 @@
 # ===================================================================
 
 keycloak:
-    serverUrl: ${KEYCLOAK_URL}/
+    serverUrl: ${KEYCLOAK_URL}/auth/
     realmName: ${ENTITY_NAME} #gbis,ibfs
     username:  entity-admin
     password:  1111 #1111
