@@ -183,6 +183,12 @@
           "strategy": {
             "type": "Docker",
             "dockerStrategy":{
+              "env": [
+                {
+                  "name": "BUILD_ENV",
+                  "value": "${ENTITY_NAME}"
+                }
+              ]
             }
 
           },
@@ -190,6 +196,12 @@
             "to": {
               "kind": "ImageStreamTag",
               "name": "frontend-build-${ENTITY_NAME}:latest"
+            }
+          },
+          "resources":{
+            "limits":{
+              "cpu": 2,
+              "memory":"2G"
             }
           }
         }
@@ -233,7 +245,13 @@
                        "kind": "ImageStreamTag",
                        "name": "jhipsterbackend-${ENTITY_NAME}:latest"
                     }
-                 }
+                 },
+                "resources":{
+                  "limits":{
+                    "cpu": 2,
+                    "memory":"2G"
+                  }
+                }
             }
         },
       {
@@ -388,7 +406,12 @@
                                         }
                                     }
                                 }
-                             ]
+                             ],
+                            "resources": {
+                              "limits": {
+                                "memory": "2G"
+                              }
+                            }
                             }
                         ]
                     }
