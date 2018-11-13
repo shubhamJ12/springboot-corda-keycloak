@@ -42,13 +42,14 @@ public class KeycloakResource {
           .password(keycloakConfiguration.getPassword())
           .clientId(keycloakConfiguration.getClientId());
 
-
         if(keycloakConfiguration.getProxyHost()!=null){
+            System.out.println("proxy host:" + keycloakConfiguration.getProxyHost());
             kc = kb.resteasyClient(new ResteasyClientBuilder()
                 .connectionPoolSize(Integer.parseInt("10")).defaultProxy(keycloakConfiguration.getProxyHost(),keycloakConfiguration.getProxyPort())
                 .build()).build();
         }
         else {
+            System.out.println("No proxy host found" );
             kc = kb.resteasyClient(new ResteasyClientBuilder()
                 .connectionPoolSize(Integer.parseInt("10"))
                 .build()).build();
