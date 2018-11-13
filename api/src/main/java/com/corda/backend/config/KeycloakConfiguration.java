@@ -22,10 +22,10 @@ public class KeycloakConfiguration {
     @Value("${keycloak.clientId}")
     private String clientId;
 
-    @Value("${keycloak.proxyHost ?:#{null}}")
+    @Value("${keycloak.proxyHost :#{null}}")
     private String proxyHost;
 
-    @Value("${keycloak.proxyPort ?:#{null}}")
+    @Value("${keycloak.proxyPort :#{null}}")
     private Integer proxyPort;
 
     public String getRealmName() {
