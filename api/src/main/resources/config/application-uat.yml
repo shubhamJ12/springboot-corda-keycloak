@@ -19,7 +19,8 @@ keycloak:
     username:  entity-admin
     password:  1111 #1111
     clientId:  web_app
-
+    proxyHost: webproxy.prd.lab-nxtit.priv
+    proxyPort: 3128
 
 #hoste name and rpc port of GBIS corda node
 # corda-node-gbis.corda-oc.svc

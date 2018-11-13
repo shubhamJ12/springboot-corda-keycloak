@@ -3,6 +3,8 @@ package com.corda.backend.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Optional;
+
 @Configuration
 public class KeycloakConfiguration {
     @Value("${keycloak.serverUrl}")
@@ -19,6 +21,12 @@ public class KeycloakConfiguration {
 
     @Value("${keycloak.clientId}")
     private String clientId;
+
+    @Value("${keycloak.proxyHost:#{null}}")
+    private String proxyHost;
+
+    @Value("${keycloak.proxyPort:#{null}}")
+    private Integer proxyPort;
 
     public String getRealmName() {
         return realmName;
@@ -58,6 +66,22 @@ public class KeycloakConfiguration {
 
     public void setServerUrl(String serverUrl) {
         this.serverUrl = serverUrl;
+    }
+
+    public String getProxyHost() {
+        return proxyHost;
+    }
+
+    public void setProxyHost(String proxyHost) {
+        this.proxyHost = proxyHost;
+    }
+
+    public Integer getProxyPort() {
+        return proxyPort;
+    }
+
+    public void setProxyPort(Integer proxyPort) {
+        this.proxyPort = proxyPort;
     }
 }
 

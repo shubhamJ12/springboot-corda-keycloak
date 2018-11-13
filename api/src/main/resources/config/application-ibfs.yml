@@ -13,6 +13,13 @@
 # http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 # ===================================================================
 
+keycloak:
+    serverUrl: http://localhost:9080/auth/
+    realmName: gbis
+    username: entity-admin
+    password: 1111
+    clientId: web_app
+
 corda:
     service:
         host: localhost

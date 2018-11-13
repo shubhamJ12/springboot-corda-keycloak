@@ -36,17 +36,23 @@ public class KeycloakResource {
 
   @PostConstruct
     public void initKeycloak(){
-//        kc = Keycloak.getInstance(keycloakConfiguration.getServerUrl(), keycloakConfiguration.getRealmName(),
-//            keycloakConfiguration.getUsername(), keycloakConfiguration.getPassword(), keycloakConfiguration.getClientId());
-//
-       kc = KeycloakBuilder.builder()
+      KeycloakBuilder kb = KeycloakBuilder.builder()
           .serverUrl(keycloakConfiguration.getServerUrl()).realm( keycloakConfiguration.getRealmName())
           .username(keycloakConfiguration.getUsername())
           .password(keycloakConfiguration.getPassword())
-          .clientId(keycloakConfiguration.getClientId())
-          .resteasyClient(new ResteasyClientBuilder()
-              .connectionPoolSize(Integer.parseInt("10")).defaultProxy("webproxy.prd.lab-nxtit.priv",3128)
-              .build()).build();
+          .clientId(keycloakConfiguration.getClientId());
+
+
+        if(keycloakConfiguration.getProxyHost()!=null){
+            kc = kb.resteasyClient(new ResteasyClientBuilder()
+                .connectionPoolSize(Integer.parseInt("10")).defaultProxy(keycloakConfiguration.getProxyHost(),keycloakConfiguration.getProxyPort())
+                .build()).build();
+        }
+        else {
+            kc = kb.resteasyClient(new ResteasyClientBuilder()
+                .connectionPoolSize(Integer.parseInt("10"))
+                .build()).build();
+        }
    }
 
     @GetMapping("/get-all-users")
